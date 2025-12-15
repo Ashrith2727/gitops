@@ -2,8 +2,8 @@ pipeline {
   agent any
 
   environment {
-    IMAGE_NAME = "ashrith2727/gitops:v1"
-    IMAGE_TAG = "${BUILD_NUMBER}"
+    IMAGE_NAME = "ashrith2727/gitops"
+    IMAGE_TAG = "v1"
   }
 
   stages {
