@@ -57,7 +57,7 @@ pipeline {
         }
       }
     }
-  }
+    
     stage('Update GitOps Repo') {
       steps {
         sh '''
@@ -67,8 +67,9 @@ pipeline {
          git commit -am "Update image to ${BUILD_NUMBER}"
          git push origin main
     '''
-    }
-  }
+     }
+   }
+ }
 
   post {
     success {
@@ -78,4 +79,4 @@ pipeline {
       echo "CI Pipeline failed!"
     }
   }
-}
+
