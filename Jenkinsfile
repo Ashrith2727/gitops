@@ -60,13 +60,22 @@ pipeline {
 
     stage('Update GitOps Repo') {
       steps {
+         withCredentials([usernamePassword(
+      credentialsId: 'github-creds',
+      usernameVariable: 'GIT_USER',
+      passwordVariable: 'GIT_PASS'
+      )]) {
         sh '''
-         git clone https://github.com/Ashrith2727/gitops-prod.git
+         rm -rf gitops-prod
+         git clone https://$GIT_USER:$GIT_PASS@github.com/Ashrith2727/gitops-prod.git
          cd gitops-prod/environments/dev
          sed -i "s|image:.*|image: ashrith2727/gitops:${BUILD_NUMBER}|" deployment.yaml
+         git config user.email "jenkins@ci.local"
+         git config user.name "jenkins"
          git commit -am "Update image to ${BUILD_NUMBER}"
          git push origin main
         '''
+         }
       }
     }
   }
