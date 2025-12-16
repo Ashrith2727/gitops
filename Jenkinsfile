@@ -72,6 +72,7 @@ pipeline {
          sed -i "s|image:.*|image: ashrith2727/gitops:${BUILD_NUMBER}|" deployment.yaml
          git config user.email "jenkins@ci.local"
          git config user.name "jenkins"
+         git add .
          git commit -am "Update image to ${BUILD_NUMBER}"
          git remote set-url origin https://${GIT_USER}:${GIT_PASS}@github.com/Ashrith2727/gitops-prod.git
          git push origin main
