@@ -58,6 +58,17 @@ pipeline {
       }
     }
   }
+    stage('Update GitOps Repo') {
+      steps {
+        sh '''
+         git clone https://github.com/Ashrith2727/gitops-prod.git
+         cd gitops-prod/environments/dev
+         sed -i "s|image:.*|image: ashrith2727/gitops:${BUILD_NUMBER}|" deployment.yaml
+         git commit -am "Update image to ${BUILD_NUMBER}"
+         git push origin main
+    '''
+    }
+  }
 
   post {
     success {
