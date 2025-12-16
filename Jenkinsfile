@@ -33,7 +33,7 @@ pipeline {
           docker build -t $IMAGE_NAME:$IMAGE_TAG app/
         '''
       }
-    }	
+    }
 
     stage('Security Scan (Trivy)') {
       steps {
@@ -57,7 +57,7 @@ pipeline {
         }
       }
     }
-    
+
     stage('Update GitOps Repo') {
       steps {
         sh '''
@@ -66,10 +66,10 @@ pipeline {
          sed -i "s|image:.*|image: ashrith2727/gitops:${BUILD_NUMBER}|" deployment.yaml
          git commit -am "Update image to ${BUILD_NUMBER}"
          git push origin main
-    '''
-     }
-   }
- }
+        '''
+      }
+    }
+  }
 
   post {
     success {
@@ -79,4 +79,4 @@ pipeline {
       echo "CI Pipeline failed!"
     }
   }
-
+}
