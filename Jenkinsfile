@@ -69,11 +69,11 @@ pipeline {
          rm -rf gitops-prod
          git clone https://${GIT_USER}:${GIT_PASS}@github.com/Ashrith2727/gitops-prod.git
          cd gitops-prod/environments/dev
-         sed -i "s|image:.*|image: ashrith2727/gitops:${BUILD_NUMBER}|" deployment.yaml
+         sed -i "s|image:.*|image: ashrith2727/gitops:v1|" deployment.yaml
          git config user.email "jenkins@ci.local"
          git config user.name "jenkins"
          git add .
-         git commit -m "Update image to ${BUILD_NUMBER}"
+         git commit -m "Update image to v1"
          git push origin main
          
         '''
