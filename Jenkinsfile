@@ -69,11 +69,11 @@ pipeline {
          rm -rf gitops-prod
          git clone https://${GIT_USER}:${GIT_PASS}@github.com/Ashrith2727/gitops-prod.git
          cd gitops-prod/environments/dev
-         sed -i "s|image:.*|image: ashrith2727/gitops:IMAGE_TAG|" deployment.yaml
+         sed -i "s|image:.*|image: ashrith2727/gitops:v2|" deployment.yaml
          git config user.email "jenkins@ci.local"
          git config user.name "jenkins"
          git add .
-         git commit -m "Update image to IMAGE_TAG"
+         git commit -m "Update image to v2"
          git push origin main
          
         '''
