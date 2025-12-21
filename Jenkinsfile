@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     IMAGE_NAME = "ashrith2727/gitops"
-    IMAGE_TAG = "v1"
+    IMAGE_TAG = "v2"
   }
 
   stages {
