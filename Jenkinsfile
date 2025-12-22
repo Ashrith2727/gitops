@@ -73,7 +73,7 @@ pipeline {
          git config user.email "jenkins@ci.local"
          git config user.name "jenkins"
          git add .
-         git commit -m "Update image to v2"
+         git commit -m "Update image to ${BUILD_NUMBER}"
          git push origin main
          
         '''
