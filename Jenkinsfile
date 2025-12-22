@@ -69,7 +69,7 @@ pipeline {
          rm -rf gitops-prod
          git clone https://${GIT_USER}:${GIT_PASS}@github.com/Ashrith2727/gitops-prod.git
          cd gitops-prod/environments/dev
-         sed -i "s|image:.*|image: ashrith2727/gitops:v2|" deployment.yaml
+         sed -i "s|image:.*|image: ashrith2727/gitops:IMAGE_TAG|" deployment.yaml
          git config user.email "jenkins@ci.local"
          git config user.name "jenkins"
          git add .
