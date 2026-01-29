@@ -46,7 +46,7 @@ pipeline {
     stage('Push Image') {
       steps {
         withCredentials([usernamePassword(
-          credentialsId: 'dockerhub-gitops',
+          credentialsId: 'dockerhub',
           usernameVariable: 'DOCKER_USER',
           passwordVariable: 'DOCKER_PASS'
         )]) {
@@ -61,7 +61,7 @@ pipeline {
     stage('Update GitOps Repo') {
       steps {
          withCredentials([usernamePassword(
-      credentialsId: 'github-creds',
+      credentialsId: 'github',
       usernameVariable: 'GIT_USER',
       passwordVariable: 'GIT_PASS'
       )]) {
