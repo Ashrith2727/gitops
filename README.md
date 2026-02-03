@@ -1,6 +1,6 @@
 
 
-# Production-Grade GitOps CI/CD Platform
+# End-to-End Kubernetes CI/CD Platform
 
 ## Overview
 This project demonstrates a **production-grade GitOps CI/CD platform** built using **Kubernetes, Jenkins, and Argo CD**, following real-world DevOps and Platform Engineering practices. The platform automates application build, containerization, deployment, monitoring, and recovery using Git as the single source of truth.
