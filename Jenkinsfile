@@ -11,7 +11,7 @@ pipeline {
     stage('Checkout Code') {
       steps {
         git branch: 'main',
-            url: 'https://github.com/Ashrith2727/gitops'
+            url: 'https://github.com/brahmanyasudulagunta/gitops'
       }
     }
 
@@ -69,7 +69,7 @@ pipeline {
          set -e
 
          rm -rf gitops-prod
-         git clone https://${GIT_USER}:${GIT_PASS}@github.com/Ashrith2727/gitops-prod.git
+         git clone https://${GIT_USER}:${GIT_PASS}@github.com/brahmanyasudulagunta/gitops-prod.git
          cd gitops-prod/environments/dev
  
          sed -i "s|image:.*|image: ashrith2727/gitops:${BUILD_NUMBER}|" deployment.yaml
