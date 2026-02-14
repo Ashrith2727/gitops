@@ -72,7 +72,7 @@ pipeline {
          git clone https://${GIT_USER}:${GIT_PASS}@github.com/brahmanyasudulagunta/gitops-prod.git
          cd gitops-prod/environments/dev
  
-         sed -i "s|image:.*|image: ashrith2727/gitops:${BUILD_NUMBER}|" deployment.yaml
+         sed -i "s|image:.*|image: ashrith2727/gitops:${BUILD_NUMBER}|" canary.yaml
          git config user.email "jenkins@ci.local"
          git config user.name "jenkins"
          if git diff --quiet; then
