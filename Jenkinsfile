@@ -15,36 +15,16 @@ pipeline {
       }
     }
 
-    stage('Install Dependencies') {
-      steps {
-        sh 'cd app && npm install'
-      }
-    }
-
-    stage('Run Tests') {
-      steps {
-        sh 'cd app && npm test || echo "No tests yet"'
-      }
-    }
-
-    stage('Build Docker Image') {
+    stage('Build & Scan & Push') {
       steps {
         sh '''
           docker build -t $IMAGE_NAME:$IMAGE_TAG app/
         '''
-      }
-    }
-
-    stage('Security Scan (Trivy)') {
-      steps {
+      
         sh '''
-          trivy image $IMAGE_NAME:$IMAGE_TAG || true
+          trivy image --severity CRITICAL,HIGH --exit-code 1 $IMAGE_NAME:$IMAGE_TAG
         '''
-      }
-    }
-
-    stage('Push Image') {
-      steps {
+      
         withCredentials([usernamePassword(
           credentialsId: 'dockerhub',
           usernameVariable: 'DOCKER_USER',
@@ -86,14 +66,16 @@ pipeline {
          }
       }
     }
+    
+    stage('Cleanup') {
+      steps {
+        sh "docker rmi $IMAGE_NAME:$IMAGE_TAG || true"
+          }
+      }
   }
 
   post {
-    success {
-      echo "CI Pipeline completed successfully!"
-    }
-    failure {
-      echo "CI Pipeline failed!"
-    }
+    success {echo "CI Pipeline completed successfully!"}
+    failure {echo "CI Pipeline failed!"}
   }
 }
