@@ -1,6 +1,6 @@
-# Platform Control Plane
+# Application-Code
 
-Internal Developer Platform for managing infrastructure requests with an approval-based GitOps workflow.
+The application tier of the platform. This repository contains the source code for the **Platform Control Plane** (React UI + FastAPI Backend + PostgreSQL Database) that enables team self-service and infrastructure administration.
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/Frontend-React-61DAFB?logo=react&logoColor=black)](https://react.dev)
@@ -9,138 +9,129 @@ Internal Developer Platform for managing infrastructure requests with an approva
 
 ---
 
-## Architecture
+## 3-Repo GitOps Architecture Role
+
+This repository represents the **software development workspace** in our decoupled, three-tier architecture:
+
+| Repository | Purpose | Primary Developer / Operator |
+| :--- | :--- | :--- |
+| **`Platform-Infrastructure`** | Provisions secure environments, resource limits, and network policies. | Platform / DevOps Team |
+| **`Application-Code`** (this) | Contains the React web frontend, FastAPI backend, and DB schemas. | Software Development Team |
+| **`Gitops-Manifests`** | Declarative Kubernetes specs synchronized automatically via ArgoCD. | CD / GitOps Engine |
 
 ```
-User → React UI → FastAPI → PostgreSQL → Admin Reviews → Manual Git Commit → Terraform/ArgoCD
+[ Developers write & test code ]  →  [ Jenkins builds Docker Image ]  →  [ Image Tag updated in Gitops-Manifests ]
 ```
-
-This platform follows an **approval-based GitOps** pattern:
-
-1. Users submit infrastructure requests (namespaces, ArgoCD apps) via the UI
-2. Requests are stored in PostgreSQL with `PENDING` status
-3. Admins review and approve/reject requests from the Admin Dashboard
-4. Approved requests are manually committed to Git by the admin
-5. GitOps pipelines (Terraform, ArgoCD) apply the changes automatically
-
-> **Why no auto-push to Git?** This design removes Git credentials from the backend, eliminates token management and push errors, and ensures human approval before infrastructure changes — matching enterprise governance standards.
 
 ---
 
-## Role in the Platform
+## Technical Overview
 
-| Repository | Role | Tools |
-|------------|------|-------|
-| [DevPlatform](https://github.com/brahmanyasudulagunta/DevPlatform) | Infrastructure provisioning & security | Terraform, Ansible, RBAC |
-| **gitops** (this) | Platform Control Plane (UI + API) | FastAPI, React, PostgreSQL |
-| [gitops-prod](https://github.com/brahmanyasudulagunta/gitops-prod) | Deployment manifests (GitOps) | Kubernetes manifests, ArgoCD |
+The Application-Code controls the Platform Control Plane using an approval-based infrastructure administration workflow:
+
+```
+User (UI) → Request Submitted → DB (PENDING) → Platform Admin Approves → Infrastructure Applied
+```
+
+1. **Users** register and request Kubernetes namespaces or ArgoCD applications.
+2. **Requests** are written to a PostgreSQL database with a `PENDING` state.
+3. **Administrators** review and approve requests inside the Admin Dashboard.
+4. **Platform Ops** applies the approved resources through the automated `Platform-Infrastructure` pipelines.
 
 ---
 
 ## Project Structure
 
 ```
-gitops/
+Application-Code/
 ├── backend/
 │   ├── api/
-│   │   ├── auth.py           # Register, Login, JWT
-│   │   ├── admin.py          # List, Approve, Reject requests
-│   │   ├── devplatform.py    # Submit namespace requests
-│   │   └── argocd.py         # Submit ArgoCD app requests
+│   │   ├── auth.py           # Register, Login, and JWT Token utilities
+│   │   ├── admin.py          # Approve and reject infrastructure requests
+│   │   ├── devplatform.py    # Namespace allocation request handling
+│   │   └── argocd.py         # ArgoCD deployment requests
 │   ├── models/
-│   │   ├── user.py           # User model (username, role)
-│   │   ├── request.py        # InfraRequest model
-│   │   └── schemas.py        # Pydantic schemas
+│   │   ├── user.py           # User and role definitions (e.g. admin, developer)
+│   │   ├── request.py        # Infrastructure request logging schemas
+│   │   └── schemas.py        # Pydantic validation structures
 │   ├── utils/
-│   │   ├── auth.py           # JWT middleware, role guards
-│   │   └── validators.py     # K8s name & image validation
-│   ├── database.py           # SQLAlchemy engine & session
-│   ├── config.py             # Environment configuration
-│   ├── main.py               # FastAPI app entry point
+│   │   ├── auth.py           # Role-based middleware guards
+│   │   └── validators.py     # RFC-compliant K8s name check libraries
+│   ├── database.py           # SQLAlchemy setup and session handling
+│   ├── config.py             # Environment configurations
+│   ├── main.py               # FastAPI entry point
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
 │   │   ├── pages/
-│   │   │   ├── Login.jsx          # Login page
-│   │   │   ├── Register.jsx       # Signup page
-│   │   │   ├── Dashboard.jsx      # User request tracker
-│   │   │   ├── DevPlatform.jsx    # Namespace request form
-│   │   │   ├── ArgoCD.jsx         # ArgoCD app request form
-│   │   │   ├── AdminDashboard.jsx # Admin request management
-│   │   │   └── RequestDetail.jsx  # Request detail + approve/reject
+│   │   │   ├── Login.jsx          # Secure developer login page
+│   │   │   ├── Register.jsx       # Account sign up
+│   │   │   ├── Dashboard.jsx      # Tracking user submitted requests
+│   │   │   ├── DevPlatform.jsx    # Submitting a Namespace request
+│   │   │   ├── ArgoCD.jsx         # Submitting an ArgoCD App request
+│   │   │   ├── AdminDashboard.jsx # Panel to inspect pending infrastructure changes
+│   │   │   └── RequestDetail.jsx  # Approver execution screen
 │   │   ├── context/
-│   │   │   └── AuthContext.jsx    # JWT auth state
+│   │   │   └── AuthContext.jsx    # Context provider for user authorization
 │   │   ├── components/
-│   │   │   ├── Layout.jsx         # Nav bar with role-based links
-│   │   │   └── ProtectedRoute.jsx # Route guard
+│   │   │   ├── Layout.jsx         # Global navigation bars
+│   │   │   └── ProtectedRoute.jsx # Route authentication interceptors
 │   │   └── services/
-│   │       └── api.js             # API client with auth headers
-│   ├── nginx.conf                 # Reverse proxy to backend
+│   │       └── api.js             # HTTP Client configuration
+│   ├── nginx.conf                 # Nginx production configurations
 │   └── Dockerfile
-├── docker-compose.yml             # PostgreSQL + Backend + Frontend
+├── docker-compose.yml             # Full localized Stack (Database, Backend, Frontend)
 └── README.md
 ```
 
 ---
 
-## API Endpoints
+## REST API Endpoints
 
 ### Auth (Public)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/auth/register` | Create new user account |
-| `POST` | `/auth/login` | Login, returns JWT token |
-| `GET` | `/auth/me` | Get current user info |
+| :--- | :--- | :--- |
+| `POST` | `/auth/register` | Register a new user account. |
+| `POST` | `/auth/login` | Authenticate credentials and return a JWT Token. |
+| `GET` | `/auth/me` | Fetch active user credentials. |
 
-### User (Requires Auth)
+### Infrastructure Requests (Requires Auth)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/devplatform/namespace` | Submit namespace request |
-| `POST` | `/argocd/application` | Submit ArgoCD app request |
-| `GET` | `/devplatform/my-requests` | View own requests |
+| :--- | :--- | :--- |
+| `POST` | `/devplatform/namespace` | Submit a request for a new namespace. |
+| `POST` | `/argocd/application` | Submit a request for an ArgoCD application deployment. |
+| `GET` | `/devplatform/my-requests` | List user's historically requested items. |
 
-### Admin (Requires Admin Role)
+### Administration (Requires Admin Role)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/admin/requests` | List all requests (filter by status) |
-| `GET` | `/admin/requests/{id}` | Get request details |
-| `POST` | `/admin/approve/{id}` | Approve a request |
-| `POST` | `/admin/reject/{id}` | Reject a request |
+| :--- | :--- | :--- |
+| `GET` | `/admin/requests` | List all historical user infrastructure requests. |
+| `GET` | `/admin/requests/{id}` | Inspect a single request item. |
+| `POST` | `/admin/approve/{id}` | Set a request status to `APPROVED`. |
+| `POST` | `/admin/reject/{id}` | Set a request status to `REJECTED`. |
 
 ---
 
-## Running Locally
+## Local Developer Environment
+
+To test the application locally using Docker Compose:
 
 ```bash
-# Start all services
+# Boot the PostgreSQL, FastAPI backend, and React frontend services
 docker compose up -d
 
-# Services:
-#   PostgreSQL  → localhost:5434
-#   Backend API → localhost:8001 (Swagger docs at /docs)
-#   Frontend UI → localhost:4000
+# Exposed Services:
+# - PostgreSQL DB  -> localhost:5434
+# - Backend API    -> localhost:8001 (Interactive docs at http://localhost:8001/docs)
+# - Frontend web   -> localhost:4000
 ```
 
-### First-Time Setup
-
-1. Open `http://localhost:4000` and register an account
-2. Promote your user to admin:
+### Initial Admin Setup
+1. Visit `http://localhost:4000` and register a normal user account.
+2. Elevate your database role directly inside the PostgreSQL container:
    ```bash
-   docker exec postgres-gitops psql -U krishna -d postgresdb \
+   docker exec -it postgres-gitops psql -U krishna -d postgresdb \
      -c "UPDATE users SET role='admin' WHERE username='YOUR_USERNAME';"
    ```
-3. Log out and log back in to get admin access
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, Vite, React Router |
-| Backend | FastAPI, SQLAlchemy, Pydantic |
-| Database | PostgreSQL 16 |
-| Auth | JWT (PyJWT), bcrypt |
-| Proxy | Nginx |
-| Container | Docker, Docker Compose |
+3. Log out and log back in to activate your administrative privileges.

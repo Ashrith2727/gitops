@@ -12,7 +12,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   backend:
-    image: ashrith2727/backend-gitops:v1
+    image: brahmanya/backend-gitops:v1
     container_name: backend-gitops
     env_file:
       - backend/.env
@@ -22,7 +22,7 @@ services:
       - postgres
 
   frontend:
-    image: ashrith2727/frontend-gitops:v1
+    image: brahmanya/frontend-gitops:v1
     container_name: frontend-gitops
     ports:
       - "4000:4000"
